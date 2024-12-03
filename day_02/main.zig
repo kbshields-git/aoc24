@@ -6,6 +6,7 @@ const ArrayList = std.ArrayList;
 const Direction = enum {
     increment,
     decrement,
+
     pub fn find(curr: u8, next: u8) ?Direction {
         return switch (std.math.order(curr, next)) {
             .eq => null,
@@ -21,21 +22,52 @@ const Direction = enum {
     }
 };
 
+pub fn checkDir(curr: u8, next: u8, dir: Direction) bool {
+    if (!dir.isSafe(curr, next)) return false else return true;
+}
+
+pub fn checkBothDir(curr: u8, next: u8, newDir: Direction, oldDir: Direction) bool {
+    if (!oldDir.isSafe(curr, next)) return false;
+    if (newDir != oldDir) return false;
+    return true;
+}
+
 pub fn checkReport(report: []const u8) !bool {
     var reportIter = std.mem.splitScalar(u8, report, ' ');
     var current = try std.fmt.parseInt(u8, reportIter.next().?, 10);
     var next = try std.fmt.parseInt(u8, reportIter.peek().?, 10);
-    const dir = Direction.find(current, next) orelse return false;
-    if (!dir.isSafe(current, next)) return false;
+    var dampener: u32 = 0;
+    const dir = Direction.find(current, next);
+    if (dir != null) {
+        if (!checkDir(current, next, dir.?)) dampener += 1;
+    } else {
+        dampener += 1;
+    }
+
     while (reportIter.next()) |sequ| {
         current = try std.fmt.parseInt(u8, sequ, 10);
-        const peekNextLev = reportIter.peek() orelse return true;
-        next = try std.fmt.parseInt(u8, peekNextLev, 10);
-        const newDir = Direction.find(current, next) orelse return false;
-        if (newDir != dir) return false;
-        if (!dir.isSafe(current, next)) return false;
+        const peekNextLev = reportIter.peek();
+        if ((peekNextLev == null) and (dampener <= 1)) {
+            print("Dampener ( {d} ): ", .{dampener});
+            return true;
+        }
+        if ((peekNextLev == null) and (dampener > 1)) {
+            print("Dampener ( {d} ): ", .{dampener});
+            return false;
+        }
+        next = try std.fmt.parseInt(u8, peekNextLev.?, 10);
+        const newDir = Direction.find(current, next);
+
+        if ((newDir != null) and (dir != null)) {
+            if (!checkBothDir(current, next, dir.?, newDir.?)) {
+                dampener += 1;
+            }
+        } else {
+            dampener += 1;
+        }
     }
-    return true;
+    print("Dampener ( {d} ): ", .{dampener});
+    if (dampener <= 1) return true else return false;
 }
 
 pub fn main() !void {
