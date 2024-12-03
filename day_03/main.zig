@@ -22,6 +22,28 @@ fn part1() !void {
     std.debug.print("Part 1 Total {d}\n", .{total});
 }
 
+fn part2() !void {
+    var total: u32 = 0;
+    var doing: bool = true;
+    var fileIter = std.mem.window(u8, input, 12, 1);
+    while (fileIter.next()) |tok| {
+        if (std.mem.eql(u8, tok[0..4], "do()")) {
+            doing = true;
+        }
+        if (std.mem.eql(u8, tok[0..7], "don't()")) {
+            doing = false;
+        }
+        if (std.mem.eql(u8, tok[0..4], "mul(")) {
+            if (doing) {
+                total += mult(tok) catch continue;
+            }
+        }
+    }
+
+    std.debug.print("Part 2 Total {d}\n", .{total});
+}
+
 pub fn main() !void {
     try part1();
+    try part2();
 }
