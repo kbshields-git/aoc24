@@ -34,6 +34,7 @@ fn part1(input: []const u8) !u64 {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const alloc = arena.allocator();
+
     var x_positions = try std.ArrayList(Pos).initCapacity(alloc, 140 * 140);
     defer x_positions.deinit();
 
@@ -71,7 +72,54 @@ fn part1(input: []const u8) !u64 {
     return cnt;
 }
 
+fn part2(input: []const u8) !u64 {
+    var lines = std.mem.splitScalar(u8, input, '\n');
+    var grid: [num_rows][num_cols]u8 = undefined;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const alloc = arena.allocator();
+
+    var a_positions = try std.ArrayList(Pos).initCapacity(alloc, 140 * 140);
+    defer a_positions.deinit();
+
+    var x: usize = 0;
+    while (lines.next()) |row| : (x += 1) {
+        for (0.., row) |y, cell| {
+            grid[x][y] = cell;
+            if (cell == 'A') {
+                a_positions.appendAssumeCapacity(.{ .x = x, .y = y });
+            }
+        }
+    }
+
+    var cnt: u64 = 0;
+    for (a_positions.items) |a_pos| {
+        // Check bounds
+        if ((a_pos.x == 0 or a_pos.x == num_rows - 1) or
+            (a_pos.y == 0 or a_pos.y == num_cols - 1))
+        {
+            continue;
+        }
+        // Right Slash
+        const r1 = grid[a_pos.x + 1][a_pos.y - 1];
+        const r2 = grid[a_pos.x - 1][a_pos.y + 1];
+        // Left Slash
+        const l1 = grid[a_pos.x - 1][a_pos.y - 1];
+        const l2 = grid[a_pos.x + 1][a_pos.y + 1];
+        if ((r1 == 'M' and r2 == 'S' or r1 == 'S' and r2 == 'M') and
+            (l1 == 'M' and l2 == 'S' or l1 == 'S' and l2 == 'M'))
+        {
+            cnt += 1;
+        }
+    }
+
+    cnt += 0;
+    return cnt;
+}
+
 pub fn main() !void {
     const part1_ans: u64 = try part1(file);
+    const part2_ans: u64 = try part2(file);
     std.debug.print("Part 1: {d}\n", .{part1_ans});
+    std.debug.print("Part 2: {d}\n", .{part2_ans});
 }
