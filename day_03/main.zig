@@ -1,8 +1,8 @@
 const std = @import("std");
 
-const input = @embedFile("input.txt");
+const input = @embedFile("sample.txt");
 
-fn mult(multok: []const u8) !u32 {
+fn mult(multok: []const u8) !usize {
     const tok1 = std.mem.sliceTo(multok[4..], ',');
     const num1 = try std.fmt.parseInt(u32, tok1, 10);
     const tok2 = std.mem.sliceTo(multok[5 + tok1.len ..], ')');
@@ -11,7 +11,7 @@ fn mult(multok: []const u8) !u32 {
 }
 
 fn part1() !void {
-    var total: u32 = 0;
+    var total: usize = 0;
     var fileIter = std.mem.window(u8, input, 12, 1);
     while (fileIter.next()) |tok| {
         if (std.mem.eql(u8, tok[0..4], "mul(")) {
@@ -23,7 +23,7 @@ fn part1() !void {
 }
 
 fn part2() !void {
-    var total: u32 = 0;
+    var total: usize = 0;
     var doing: bool = true;
     var fileIter = std.mem.window(u8, input, 12, 1);
     while (fileIter.next()) |tok| {
