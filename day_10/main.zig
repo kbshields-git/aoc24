@@ -20,7 +20,7 @@ fn part1(file: []const u8) !u64 {
     var x: usize = 0;
     while (lines.next()) |row| : (x += 1) {
         for (0.., row) |y, cell| {
-            grid[x][y] = cell;
+            grid[x][y] = try std.fmt.parseInt(u8, &[_]u8{cell}, 10);
             if (cell == '0') {
                 try trailHeads.append(.{ @intCast(x), @intCast(y) });
             }
@@ -33,13 +33,17 @@ fn part1(file: []const u8) !u64 {
     for (trailHeads.items) |head| {
         try searchList.append(head);
         defer searchList.clearRetainingCapacity();
-        const nums = [_]u8{ '1', '2', '3', '4', '5', '6', '7', '8' };
-        for (nums) |next| {
+        // const nums = [_]u8{ '1', '2', '3', '4', '5', '6', '7', '8' };
+        //for (nums) |next| {
+        for (1..9) |next| {
+
             //            print("next type: {any}\n", .{@TypeOf(next)});
             var oldList = try searchList.clone();
             defer oldList.deinit();
             searchList.clearRetainingCapacity();
             for (oldList.items) |pathStep| {
+                if (pathStep[0] > 0)
+                    print("Grid: {any}\n", .{grid[pathStep[0] - 1][pathStep[1]]});
                 if (pathStep[0] > 0 and grid[pathStep[0] - 1][pathStep[1]] == next)
                     try searchList.append(pathStep - X);
                 if (pathStep[0] < grid_size and grid[pathStep[0] + 1][pathStep[1]] == next)
@@ -53,13 +57,13 @@ fn part1(file: []const u8) !u64 {
         //print("searchList: {any}\n", .{searchList});
         var uniquePeaks = std.AutoHashMap(@Vector(2, u8), void).init(alloc);
         for (searchList.items) |pathStep| {
-            if (pathStep[0] > 0 and grid[pathStep[0] - 1][pathStep[1]] == '9')
+            if (pathStep[0] > 0 and grid[pathStep[0] - 1][pathStep[1]] == 9)
                 uniquePeaks.put(pathStep - X, {}) catch {};
-            if (pathStep[0] < grid_size and grid[pathStep[0] + 1][pathStep[1]] == '9')
+            if (pathStep[0] < grid_size and grid[pathStep[0] + 1][pathStep[1]] == 9)
                 uniquePeaks.put(pathStep + X, {}) catch {};
-            if (pathStep[1] > 0 and grid[pathStep[0]][pathStep[1] - 1] == '9')
+            if (pathStep[1] > 0 and grid[pathStep[0]][pathStep[1] - 1] == 9)
                 uniquePeaks.put(pathStep - Y, {}) catch {};
-            if (pathStep[1] < grid_size and grid[pathStep[0]][pathStep[1] + 1] == '9')
+            if (pathStep[1] < grid_size and grid[pathStep[0]][pathStep[1] + 1] == 9)
                 uniquePeaks.put(pathStep + Y, {}) catch {};
         }
         //print("Unique Peaks: {any}\n", .{uniquePeaks});
